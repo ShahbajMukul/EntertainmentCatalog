@@ -1,0 +1,55 @@
+﻿<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">Rate @Item.Title</MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudContainer Style="max-height: 300px; overflow-y: scroll">
+            <div class="d-flex flex-column align-center">
+                <MudRating @bind-Value="_rating"
+                           MaxValue="10"
+                           SelectedValueChanged="@((int value) => UpdateRating(value))" />
+                <MudText Typo="Typo.subtitle2">@(_rating)/10</MudText>
+            </div>
+            <MudTextField @bind-Value="_review"
+                          Label="Your Review"
+                          Variant="Variant.Outlined"
+                          Lines="3" />
+        </MudContainer>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Primary" OnClick="Submit">Submit Rating</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    MudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter]
+    public ItemDetails Item { get; set; } = default!;
+
+    private int _rating;
+    private string _review = string.Empty;
+
+    private void UpdateRating(int value)
+    {
+        _rating = value;
+        StateHasChanged();
+    }
+
+    private void Cancel()
+    {
+        MudDialog.Cancel();
+    }
+
+    private void Submit()
+    {
+        var ratingData = new
+        {
+            Rating = _rating,
+            Review = _review
+        };
+        MudDialog.Close(DialogResult.Ok(ratingData));
+    }
+}

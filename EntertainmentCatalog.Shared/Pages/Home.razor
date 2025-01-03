@@ -1,0 +1,148 @@
+﻿@page "/"
+@using EntertainmentCatalog.Shared.Components
+@using EntertainmentCatalog.Shared.Services
+@inject IFormFactor FormFactor
+@inject ApiService apiService
+@inject IDialogService DialogService
+@using MudBlazor.Utilities
+
+
+<PageTitle>Home</PageTitle>
+
+<MudText Typo="Typo.h4" Align="Align.Center">Search</MudText>
+
+
+<MudGrid Justify="Justify.FlexStart">
+    <MudItem xs="10">
+        @* <MudPaper Class="d-flex flex-column align-center justify-center mud-width-full py-8">
+                hi
+                </MudPaper> *@
+
+        <MudTextField @bind-Value="userSearchInput"
+                      @onkeypress="HandleEnterKey"
+                      Label="Search for something!"
+                      Variant="Variant.Outlined"
+                      Immediate="true"
+                      DebounceInterval="0"
+                      @ValidationCheck="@(() => !string.IsNullOrEmpty(userSearchInput))"
+                      ErrorText="Please enter a search term" />
+    </MudItem>
+    <MudItem xs="2">
+        <div Class="d-flex align-center pt-1 justify-center">
+            <MudIconButton Icon="@Icons.Material.Filled.Search" aria-label="Search" Size="Size.Large"  Color="Color.Surface"
+                           OnClick="SearchItem"
+            />
+        </div>
+    </MudItem>
+</MudGrid>
+
+
+@if (processingRequest)
+{
+    <div class="justify-content-center text-center">
+        <MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true" />
+
+    </div>
+}
+else if (!string.IsNullOrEmpty(searchResult.Title))
+{
+    <MudPaper Elevation="3" >
+        <MudCard >
+            <div class="m-3">
+                <CardHeaderContent>
+                    <div class="row justify-content-between">
+                        <MudText Typo="Typo.h5" Class="fw-bold col-auto">@searchResult.Title</MudText>
+                        <div class="col-auto justify-content-center text-center">
+                            <MudIconButton OnClick="OpenDialog" Icon="@Icons.Material.Rounded.RateReview" Color="Color.Primary" ></MudIconButton>
+                            <MudText Color="Color.Primary">Rate</MudText>
+                        </div>
+                    </div>
+                </CardHeaderContent>
+                <MudImage Src="@searchResult.Poster" ObjectFit="ObjectFit.Contain" ObjectPosition="ObjectPosition.Center" />
+                <CardContent>
+                    <MudText Typo="Typo.body2">Year: @searchResult.Year</MudText>
+                    <MudText Typo="Typo.body2">Director: @searchResult.Director</MudText>
+                    <MudText Typo="Typo.body2">Actors: @searchResult.Actors</MudText>
+                    <MudText Typo="Typo.body2">Plot: @searchResult.Plot</MudText>
+                    <MudText Typo="Typo.body2">Awards: @searchResult.Awards</MudText>
+                    <MudText Typo="Typo.body2">IMDB Rating: @searchResult.imdbRating</MudText>
+                </CardContent>
+            </div>
+        </MudCard>
+    </MudPaper>
+
+
+@*     Rate Modal *@
+
+    @* <div class="modal-dialog modal-dialog-centered" id="rateModal" tabindex="-1" aria-labelledby="rateModalLabel">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Rate @searchResult.Title</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Modal body text goes here.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary">Save changes</button>
+                </div>
+            </div>
+        </div>
+    </div> *@
+
+
+}
+
+
+@code {
+    private string? userSearchInput = String.Empty;
+    private ItemDetails searchResult = new();
+    private bool processingRequest = false;
+
+    private async Task SearchItem()
+    {
+        if (string.IsNullOrEmpty(userSearchInput))
+            return;
+
+        try
+        {
+            processingRequest = true;
+            StateHasChanged();
+            searchResult = await apiService.GetItemDetailsAsync(userSearchInput);
+        }
+        finally
+        {
+            processingRequest = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task HandleEnterKey(KeyboardEventArgs eventArgs)
+    {
+        if (eventArgs.Key == "Enter" && !string.IsNullOrEmpty(userSearchInput))
+        {
+            await SearchItem();
+        }
+    }
+
+    private async Task OpenDialog()
+    {
+        var parameters = new DialogParameters
+        {
+            { "Item", searchResult },
+        };
+
+        var dialog = await DialogService.ShowAsync<RateModal>("Rate Movie", parameters);
+        var result = await dialog.Result;
+
+        if (!result!.Canceled)
+        {
+            // Handle the rating submission here
+            var rating = result.Data;
+        }
+    }
+    
+
+}

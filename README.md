@@ -1,0 +1,2 @@
+# EntertainmentCatalogApp
+ A multi-platform app to keep track of movies and tv shows that user watches. It is developed using Blazor Hybrid Maui and Web Application so it supports Android, IOS, Windows, and Web. This is a very useful app that made for myself as I am a film enthusistic and constantly find myself using notes app in phone to manually write reviews for the films and shows that I watch which is a very inconvinent process, and that was the inspiration for me to create this software.

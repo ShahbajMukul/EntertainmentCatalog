@@ -4,16 +4,37 @@
     </TitleContent>
     <DialogContent>
         <MudContainer Style="max-height: 300px; overflow-y: scroll">
-            <div class="d-flex flex-column align-center">
-                <MudRating @bind-Value="_rating"
-                           MaxValue="10"
-                           SelectedValueChanged="@((int value) => UpdateRating(value))" />
-                <MudText Typo="Typo.subtitle2">@(_rating)/10</MudText>
+            <!-- Rating Section -->
+            <div class="d-flex flex-column align-center mb-4">
+                <MudRating @bind-Value="ItemReview.Rating"
+                          MaxValue="10"
+                          SelectedValueChanged="@((int value) => UpdateRating(value))" />
+                <MudText Typo="Typo.subtitle2">@(ItemReview.Rating)/10</MudText>
             </div>
-            <MudTextField @bind-Value="_review"
-                          Label="Your Review"
-                          Variant="Variant.Outlined"
-                          Lines="3" />
+
+            <!-- Review Text Section -->
+            <MudTextField @bind-Value="ItemReview.ReviewText"
+                         Label="Your Review"
+                         Variant="Variant.Outlined"
+                         Lines="3"
+                         Class="mb-4" />
+
+            <!-- Rewatch Toggle Section -->
+            <MudCard Elevation="0" Class="border-1 p-n6">
+                <MudCardContent>
+                    <div class="d-flex justify-space-between align-center">
+                        <div class="d-flex align-center">
+                            <MudIcon Icon="@Icons.Material.Filled.MovieFilter" 
+                                    Class="mr-2" 
+                                    Color="@(ItemReview.WillWatchAgain ? Color.Success : Color.Default)" />
+                        </div>
+                        <MudSwitch @bind-value="@ItemReview.WillWatchAgain"
+                                  Color="Color.Success"
+                                  Label="@(ItemReview.WillWatchAgain ? "Absolute Cinema!" : "Skip rewatch")" />
+                        
+                    </div>
+                </MudCardContent>
+            </MudCard>
         </MudContainer>
     </DialogContent>
     <DialogActions>
@@ -28,13 +49,30 @@
 
     [Parameter]
     public ItemDetails Item { get; set; } = default!;
+    private ReviewDetails ItemReview { get; set; } = new ReviewDetails();
 
-    private int _rating;
-    private string _review = string.Empty;
+    protected override void OnInitialized()
+    {
+        ItemReview = new ReviewDetails
+        {
+            Title = Item.Title,
+            Year = Item.Year,
+            ReleaseDate = Item.ReleaseDate,
+            Runtime = Item.Runtime,
+            Genre = Item.Genre,
+            Director = Item.Director,
+            Actors = Item.Actors,
+            Plot = Item.Plot,
+            Awards = Item.Awards,
+            Poster = Item.Poster,
+            imdbRating = Item.imdbRating,
+            Type = Item.Type
+        };
+    }
 
     private void UpdateRating(int value)
     {
-        _rating = value;
+        ItemReview.Rating = value;
         StateHasChanged();
     }
 
@@ -45,11 +83,6 @@
 
     private void Submit()
     {
-        var ratingData = new
-        {
-            Rating = _rating,
-            Review = _review
-        };
-        MudDialog.Close(DialogResult.Ok(ratingData));
+        MudDialog.Close(DialogResult.Ok(ItemReview));
     }
 }

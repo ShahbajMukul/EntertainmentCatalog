@@ -10,7 +10,7 @@ namespace EntertainmentCatalog.Shared.Models
     {
         public string Title { get; set; } = string.Empty;
         public string Year { get; set; }
-        public DateOnly ReleaseDate { get; set; }
+        public string ReleaseDate { get; set; }
         public string Runtime { get; set; }
         public string Genre { get; set; } = string.Empty ;
         public string Director { get; set; } = string.Empty;

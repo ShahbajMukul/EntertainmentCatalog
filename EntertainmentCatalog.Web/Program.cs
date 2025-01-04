@@ -1,6 +1,7 @@
 using EntertainmentCatalog.Shared.Services;
 using EntertainmentCatalog.Web.Components;
 using EntertainmentCatalog.Web.Services;
+using MudBlazor.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,14 +12,25 @@ builder.Services.AddRazorComponents()
 // Add device-specific services used by the EntertainmentCatalog.Shared project
 builder.Services.AddSingleton<IFormFactor, FormFactor>();
 
+
+builder.Services.AddMudServices();
 // Register HttpClient and ApiService
 builder.Services.AddSingleton(new HttpClient());
-builder.Services.AddSingleton<FilmServiceApi>(provider =>
+builder.Configuration.AddJsonFile("appsettings.json", optional: false);
+
+
+builder.Services.AddSingleton<ApiService>(provider =>
 {
     var httpClient = provider.GetRequiredService<HttpClient>();
-    var apiKey = "247db97b";
-    return new FilmServiceApi(httpClient, apiKey);
+    var apiKey = builder.Configuration["OmdbApiKey"];
+
+    if (apiKey == null)
+        throw new InvalidOperationException("Failed to load Api key from the json file. Please debug and check what's wrong");
+
+    return new ApiService(httpClient, apiKey);
 });
+builder.Services.AddSingleton<StorageService>();
+
 
 var app = builder.Build();
 

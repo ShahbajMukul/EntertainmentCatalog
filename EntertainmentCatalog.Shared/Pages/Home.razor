@@ -1,148 +1,108 @@
 ﻿@page "/"
-@using EntertainmentCatalog.Shared.Components
-@using EntertainmentCatalog.Shared.Services
-@inject IFormFactor FormFactor
-@inject ApiService apiService
-@inject IDialogService DialogService
-@using MudBlazor.Utilities
+@inject StorageService StorageService
+
+<PageTitle>My Reviews</PageTitle>
+
+<h1>My Reviews</h1>
 
 
-<PageTitle>Home</PageTitle>
-
-<MudText Typo="Typo.h4" Align="Align.Center">Search</MudText>
-
-
-<MudGrid Justify="Justify.FlexStart">
-    <MudItem xs="10">
-        @* <MudPaper Class="d-flex flex-column align-center justify-center mud-width-full py-8">
-                hi
-                </MudPaper> *@
-
-        <MudTextField @bind-Value="userSearchInput"
-                      @onkeypress="HandleEnterKey"
-                      Label="Search for something!"
-                      Variant="Variant.Outlined"
-                      Immediate="true"
-                      DebounceInterval="0"
-                      @ValidationCheck="@(() => !string.IsNullOrEmpty(userSearchInput))"
-                      ErrorText="Please enter a search term" />
-    </MudItem>
-    <MudItem xs="2">
-        <div Class="d-flex align-center pt-1 justify-center">
-            <MudIconButton Icon="@Icons.Material.Filled.Search" aria-label="Search" Size="Size.Large"  Color="Color.Surface"
-                           OnClick="SearchItem"
-            />
-        </div>
-    </MudItem>
-</MudGrid>
-
-
-@if (processingRequest)
+@if(reviews.Count < 1)
 {
-    <div class="justify-content-center text-center">
-        <MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true" />
+    <div class="d-flex flex-column justify-space-between" style="min-height: 85vh;">
+        <div class="flex-grow-1">
+            <MudAlert Severity="Severity.Info" Variant="Variant.Filled" Elevation="3">You have not reviewed any films or TV-shows. Please rate films and then check back!</MudAlert>
+        </div>
 
+        <!-- Button at bottom -->
+        <div class="px-4 pb-5">
+            <MudButton Href="rate"
+                       StartIcon="@Icons.Material.Outlined.RateReview"
+                       Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       FullWidth="true">
+                Rate a Film
+            </MudButton>
+        </div>
     </div>
+
 }
-else if (!string.IsNullOrEmpty(searchResult.Title))
+
+@foreach (var review in reviews)
 {
-    <MudPaper Elevation="3" >
-        <MudCard >
-            <div class="m-3">
-                <CardHeaderContent>
-                    <div class="row justify-content-between">
-                        <MudText Typo="Typo.h5" Class="fw-bold col-auto">@searchResult.Title</MudText>
-                        <div class="col-auto justify-content-center text-center">
-                            <MudIconButton OnClick="OpenDialog" Icon="@Icons.Material.Rounded.RateReview" Color="Color.Primary" ></MudIconButton>
-                            <MudText Color="Color.Primary">Rate</MudText>
+    <MudPaper Class="my-2 pa-4" Elevation="3" >
+        <div class="d-flex gap-4">
+            <MudImage Src="@review.Poster" Width="100" Height="150" ObjectFit="ObjectFit.Cover" Class="rounded mx-n2" />
+            <div>
+                <div class="d-flex align-center">
+                    <!-- Rating Section -->
+                    <MudTooltip Text="Movie Rating">
+                        <div class="d-flex align-center">
+                            <MudIcon Icon="@Icons.Material.Filled.Star" Color="Color.Warning"></MudIcon>
+                            <MudText Typo="Typo.body2"
+                                     Class="ms-1 font-weight-bold">
+                                @review.Rating/10
+                            </MudText>
                         </div>
-                    </div>
-                </CardHeaderContent>
-                <MudImage Src="@searchResult.Poster" ObjectFit="ObjectFit.Contain" ObjectPosition="ObjectPosition.Center" />
-                <CardContent>
-                    <MudText Typo="Typo.body2">Year: @searchResult.Year</MudText>
-                    <MudText Typo="Typo.body2">Director: @searchResult.Director</MudText>
-                    <MudText Typo="Typo.body2">Actors: @searchResult.Actors</MudText>
-                    <MudText Typo="Typo.body2">Plot: @searchResult.Plot</MudText>
-                    <MudText Typo="Typo.body2">Awards: @searchResult.Awards</MudText>
-                    <MudText Typo="Typo.body2">IMDB Rating: @searchResult.imdbRating</MudText>
-                </CardContent>
-            </div>
-        </MudCard>
-    </MudPaper>
+                    </MudTooltip>
 
+                    <!-- Rewatch Status Section -->
+                    <MudTooltip Text="@(review.WillWatchAgain ? "Worth watching again" : "Not worth rewatching")">
+                        <div class="d-flex align-center">
+                            @if (review.WillWatchAgain)
+                            {
+                                <MudIcon Icon="@Icons.Material.Filled.Replay"
+                                         Color="Color.Success"
+                                         Class="me-1" />
+                                <MudText Color="Color.Success"
+                                         Typo="Typo.caption">
+                                    Rewatch Worthy
+                                </MudText>
+                            }
+                            else
+                            {
+                                <MudIcon Icon="@Icons.Material.Filled.NotInterested"
+                                         Color="Color.Error"
+                                         Class="me-1" />
+                                <MudText Color="Color.Error"
+                                         Typo="Typo.caption">
+                                    Skip Rewatch
+                                </MudText>
+                            }
+                        </div>
+                    </MudTooltip>
 
-@*     Rate Modal *@
-
-    @* <div class="modal-dialog modal-dialog-centered" id="rateModal" tabindex="-1" aria-labelledby="rateModalLabel">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Rate @searchResult.Title</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <!-- Date Section -->
+                    <MudTooltip Text="Review Date">
+                        <div class="d-flex align-center me-1">
+                            <MudIcon Icon="@Icons.Material.Filled.Schedule"
+                                     Color="Color.Default"
+                                     Class="me-1"
+                                     Size="Size.Small" />
+                            <MudText Typo="Typo.caption"
+                                     Color="Color.Secondary">
+                                @review.ReviewDate.ToString("MMM dd, yyyy")
+                            </MudText>
+                        </div>
+                    </MudTooltip>
                 </div>
-                <div class="modal-body">
-                    <p>Modal body text goes here.</p>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary">Save changes</button>
-                </div>
+                <MudCard Elevation="0" Class="border-1 me-2">
+                    <MudCardContent>
+                        <MudText Typo="Typo.body2">@review.ReviewText</MudText>
+                    </MudCardContent>
+                </MudCard>
             </div>
         </div>
-    </div> *@
-
+    </MudPaper>
 
 }
 
 
 @code {
-    private string? userSearchInput = String.Empty;
-    private ItemDetails searchResult = new();
-    private bool processingRequest = false;
+    private List<ReviewDetails> reviews = new List<ReviewDetails>();
 
-    private async Task SearchItem()
+    protected override async Task OnInitializedAsync()
     {
-        if (string.IsNullOrEmpty(userSearchInput))
-            return;
-
-        try
-        {
-            processingRequest = true;
-            StateHasChanged();
-            searchResult = await apiService.GetItemDetailsAsync(userSearchInput);
-        }
-        finally
-        {
-            processingRequest = false;
-            StateHasChanged();
-        }
+        reviews = StorageService.LoadReviews();
     }
-
-    private async Task HandleEnterKey(KeyboardEventArgs eventArgs)
-    {
-        if (eventArgs.Key == "Enter" && !string.IsNullOrEmpty(userSearchInput))
-        {
-            await SearchItem();
-        }
-    }
-
-    private async Task OpenDialog()
-    {
-        var parameters = new DialogParameters
-        {
-            { "Item", searchResult },
-        };
-
-        var dialog = await DialogService.ShowAsync<RateModal>("Rate Movie", parameters);
-        var result = await dialog.Result;
-
-        if (!result!.Canceled)
-        {
-            // Handle the rating submission here
-            var rating = result.Data;
-        }
-    }
-    
 
 }

@@ -95,8 +95,7 @@ This project is licensed under the [MIT License](LICENSE).
 
 ## 📬 Contact
 
-- **Developer**: Shahbaj Mukul
-- **GitHub Issues**: [Report a bug](https://github.com/shahbajmukul/entertainment-catalog/issues)
+- **Developer**: Shahbaj Mukul (me!)
 
 ---
 

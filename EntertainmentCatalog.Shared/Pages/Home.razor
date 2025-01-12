@@ -8,21 +8,12 @@
 
 @if(reviews.Count < 1)
 {
-    <div class="d-flex flex-column justify-space-between" style="min-height: 85vh;">
+    <div class="d-flex flex-column justify-space-between mb-n9" style="min-height: 85vh;">
         <div class="flex-grow-1">
             <MudAlert Severity="Severity.Info" Variant="Variant.Filled" Elevation="3">You have not reviewed any films or TV-shows. Please rate films and then check back!</MudAlert>
         </div>
 
-        <!-- Button at bottom -->
-        <div class="px-4 pb-5">
-            <MudButton Href="rate"
-                       StartIcon="@Icons.Material.Outlined.RateReview"
-                       Variant="Variant.Filled"
-                       Color="Color.Primary"
-                       FullWidth="true">
-                Rate a Film
-            </MudButton>
-        </div>
+
     </div>
 
 }
@@ -95,6 +86,17 @@
     </MudPaper>
 
 }
+
+<!-- Button at bottom -->
+<div class="px-4 pb-5">
+    <MudButton Href="rate"
+               StartIcon="@Icons.Material.Outlined.RateReview"
+               Variant="Variant.Filled"
+               Color="Color.Primary"
+               FullWidth="true">
+        Rate a Film
+    </MudButton>
+</div>
 
 
 @code {
